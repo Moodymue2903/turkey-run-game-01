@@ -3,7 +3,7 @@
 // /output/dossier.json with buildDossier from vendor/makefun-game.ts.
 // Outside the grader, MAKEFUN_OUTPUT_DIR stands in for /output.
 // Standard library only; run with Node 22: MAKEFUN_OUTPUT_DIR=out node main.ts
-import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildDossier } from './vendor/makefun-game.ts';
 
@@ -27,7 +27,13 @@ function copyTree(name) {
   cpSync(from, to, { recursive: true, dereference: false });
 }
 
-rmSync(outputDir, { recursive: true, force: true });
+// The grader mounts the output directory, so the directory itself must
+// stay put. Empty it by deleting what is inside it, one entry at a time.
+if (existsSync(outputDir)) {
+  for (const entry of readdirSync(outputDir)) {
+    rmSync(join(outputDir, entry), { recursive: true, force: true });
+  }
+}
 mkdirSync(outputDir, { recursive: true });
 copyTree('game');
 copyTree('screenshots');
